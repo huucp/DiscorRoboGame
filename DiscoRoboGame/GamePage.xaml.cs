@@ -15,14 +15,14 @@ namespace DiscoRoboGame
 {
     public partial class GamePage : PhoneApplicationPage
     {
-        private Game1 _game;
+        private DiscoRoboGame _game;
 
         // Constructor
         public GamePage()
         {
             InitializeComponent();
 
-            _game = XamlGame<Game1>.Create("", this);
+            _game = XamlGame<DiscoRoboGame>.Create("", this);
 
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
