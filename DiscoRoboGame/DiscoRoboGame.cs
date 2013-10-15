@@ -50,6 +50,12 @@ namespace DiscoRoboGame
 
         private int UpdateCount = -60; // Wait time: 1 sec
 
+        protected double EPSILON
+        {
+            get { return 0.001; }
+        }
+
+
         public DiscoRoboGame()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -211,28 +217,12 @@ namespace DiscoRoboGame
 
             // Add controller
             ControlObject controlObject;
-            int controlPosY = GraphicsDevice.Viewport.Height - 200;
-            controlObject = new ControlObject(this, new Vector2(0, controlPosY),
+            controlObject = new ControlObject(this, new Vector2(LeftColumnPos, ScoreRowBeginPos),
                             Textures["UpArrow"], ControlObject.ControlType.Up);
             GameObjects.Add(controlObject);
-            controlObject = new ControlObject(this, new Vector2(200, controlPosY),
+            controlObject = new ControlObject(this, new Vector2(RightColumPos, ScoreRowBeginPos),
                             Textures["DownArrow"], ControlObject.ControlType.Down);
             GameObjects.Add(controlObject);
-            controlObject = new ControlObject(this, new Vector2(400, controlPosY),
-                            Textures["LeftArrow"], ControlObject.ControlType.Left);
-            GameObjects.Add(controlObject);
-            controlObject = new ControlObject(this, new Vector2(600, controlPosY),
-                            Textures["RightArrow"], ControlObject.ControlType.Right);
-            GameObjects.Add(controlObject);
-
-            // Add mark line
-            LineObject line;
-            line = new LineObject(this, new Vector2(0, ScoreRowBeginPos), Textures["RedLine"]);
-            line.ScaleX = 5;
-            GameObjects.Add(line);
-            line = new LineObject(this, new Vector2(0, ScoreRowEndPos), Textures["RedLine"]);
-            line.ScaleX = 5;
-            GameObjects.Add(line);
 
             // Add score
             _score = new TextObject(this, Fonts["Kootenay"], new Vector2(GraphicsDevice.Viewport.Width / 2, 100), "0") { ScaleX = 5, ScaleY = 5 };
@@ -415,31 +405,34 @@ namespace DiscoRoboGame
             SpriteObject touchSprite;
             TouchCollection tc = TouchPanel.GetState();
             // Is the player tapping the screen?
-            if (tc.Count == 1)
+            if (tc.Count < 3)
             {
-                TouchLocation touch = tc[0];
-                if (touch.State == TouchLocationState.Pressed)
+                for (int i = 0; i < tc.Count; i++)
                 {
-                    touchSprite = GetSpriteAtPoint(touch.Position);
-                    if (touchSprite is ControlObject)
+                    TouchLocation touch = tc[i];
+                    if (touch.State == TouchLocationState.Pressed)
                     {
-                        //   Debug.WriteLine("tap");
-                        _controlButton = (ControlObject)touchSprite;
-                        _controlButton.TapUpdateCount = 10;
-                        switch (_controlButton.InputType)
+                        touchSprite = GetSpriteAtPoint(touch.Position);
+                        if (touchSprite is ControlObject)
                         {
-                            case ControlObject.ControlType.Right:
-                                ProcessRightColumn(ControlObject.ControlType.Right);
-                                break;
-                            case ControlObject.ControlType.Left:
-                                ProcessRightColumn(ControlObject.ControlType.Left);
-                                break;
-                            case ControlObject.ControlType.Up:
-                                ProcessLeftColumn(ControlObject.ControlType.Up);
-                                break;
-                            case ControlObject.ControlType.Down:
-                                ProcessLeftColumn(ControlObject.ControlType.Down);
-                                break;
+                            //   Debug.WriteLine("tap");
+                            _controlButton = (ControlObject)touchSprite;
+                            _controlButton.TapUpdateCount = 10;
+                            switch (_controlButton.InputType)
+                            {
+                                case ControlObject.ControlType.Right:
+                                    ProcessRightColumn(ControlObject.ControlType.Right);
+                                    break;
+                                case ControlObject.ControlType.Left:
+                                    ProcessRightColumn(ControlObject.ControlType.Left);
+                                    break;
+                                case ControlObject.ControlType.Up:
+                                    ProcessLeftColumn(ControlObject.ControlType.Up);
+                                    break;
+                                case ControlObject.ControlType.Down:
+                                    ProcessLeftColumn(ControlObject.ControlType.Down);
+                                    break;
+                            }
                         }
                     }
 
@@ -460,12 +453,11 @@ namespace DiscoRoboGame
                 if (gameObj is BalloonObject)
                 {
                     spriteObj = (BalloonObject)gameObj;
-                    if (spriteObj.PositionX == LeftColumnPos)
+                    if (Math.Abs(spriteObj.PositionX - LeftColumnPos) < EPSILON)
                     {
-                        if (!(spriteObj.BoundingBox.Bottom < ScoreRowBeginPos || spriteObj.BoundingBox.Top > ScoreRowEndPos)
-                            && spriteObj.BalloonType == type)
+                        int center = (spriteObj.BoundingBox.Bottom + spriteObj.BoundingBox.Top) / 2;
+                        if (!(center < ScoreRowBeginPos || center > ScoreRowEndPos))
                         {
-
                             GameScore++;
                             _score.Text = GameScore.ToString();
                             //Debug.WriteLine(GameScore);
@@ -475,7 +467,7 @@ namespace DiscoRoboGame
             }
         }
 
-        //// Process left hand and left foot (a.k.a up and down icon)
+        // Process left hand and left foot (a.k.a up and down icon)
         private void ProcessRightColumn(ControlObject.ControlType type)
         {
             GameObjectBase gameObj;
@@ -487,10 +479,10 @@ namespace DiscoRoboGame
                 if (gameObj is BalloonObject)
                 {
                     spriteObj = (BalloonObject)gameObj;
-                    if (spriteObj.PositionX == RightColumPos)
+                    if (Math.Abs(spriteObj.PositionX - RightColumPos) < EPSILON)
                     {
-                        if (!(spriteObj.BoundingBox.Bottom < ScoreRowBeginPos || spriteObj.BoundingBox.Top > ScoreRowEndPos)
-                            && spriteObj.BalloonType == type)
+                        int center = (spriteObj.BoundingBox.Bottom + spriteObj.BoundingBox.Top) / 2;
+                        if (!(center < ScoreRowBeginPos || center > ScoreRowEndPos))
                         {
                             GameScore++;
                             _score.Text = GameScore.ToString();
@@ -499,7 +491,6 @@ namespace DiscoRoboGame
                 }
             }
         }
-
 
         private BalloonObject GetBalloonObject()
         {

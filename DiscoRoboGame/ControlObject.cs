@@ -36,8 +36,8 @@ namespace DiscoRoboGame
         {
             _game = game;
 
-            ScaleX = 0.33f;
-            ScaleY = 0.33f;
+            ScaleX = 0.3f;
+            ScaleY = 0.3f;
         }
 
         internal ControlObject(DiscoRoboGame game, Vector2 position, Texture2D texture, ControlType type)
