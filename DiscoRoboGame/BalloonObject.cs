@@ -54,7 +54,7 @@ namespace DiscoRoboGame
             PositionY += _speed;
 
             // Check when the balloon pass the bottom
-            if (PositionY > DiscoRoboGame.ScoreRowEndPos)
+            if (PositionY > ModeGame.ScoreRowEndPos)
             {
                 IsActive = false;
             }
